@@ -12,6 +12,10 @@ const domains = inputFile.toString().split(/\n|\r/);
 const domainTld = {}
 const domainGroups = []
 
+function onlyUnique(value, index, self) {
+  return self.indexOf(value) === index;
+}
+
 // We group domains by their tld (not smart enough to catch .co.uk)
 domains.forEach((domain) => {
   const parts = domain.split('.')
@@ -28,11 +32,13 @@ domains.forEach((domain) => {
 })
 
 Object.keys(domainTld).forEach((tld) => {
-  const tldDomains = domainTld[tld] || []
+  const tldDomains = (domainTld[tld] || []).filter(onlyUnique).filter((d) => d && d.length);
 
-  domainGroups.push(`((${tldDomains.join('|')})\\.${tld})`)
+  if (tldDomains.length > 0) {
+    domainGroups.push(`((${tldDomains.join('|')})\\.${tld})`)
+  }
 })
 
-const regex = `/^([\\w-\\.]+@)(?!${domainGroups.join('|')})/i`
+const regex = `/^([\\w-\\.\\+]+@)(?!${domainGroups.join('|')})/i`
 
 console.log(regex)
